@@ -5,4 +5,5 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "order-system-db"
-database_id = "TUTAJ-WPISZ-ID-PO-STWORZENIU-BAZY"
+database_id = "74022a00-6a28-4b15-b7bf-cf60833b9d60"
+
