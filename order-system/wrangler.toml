@@ -2,8 +2,10 @@ name = "order-system"
 compatibility_date = "2025-12-02"
 pages_build_output_dir = "."
 
+[assets]
+directory = "."
+
 [[d1_databases]]
 binding = "DB"
 database_name = "order-system-db"
 database_id = "74022a00-6a28-4b15-b7bf-cf60833b9d60"
-
