@@ -1,0 +1,1828 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>System Zamówień — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --accent:#007AFF;
+    --glass: rgba(255,255,255,0.8);
+    --radius:14px;
+    --shadow: 0 8px 24px rgba(15,23,42,0.06);
+    --shadow-2: 0 4px 12px rgba(15,23,42,0.04);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, system-ui, -apple-system, "Helvetica Neue", Arial;
+    background:linear-gradient(180deg,#eef2f6 0%, #f4f6f8 100%);
+    color:#0f172a;
+    padding:0;
+  }
+
+  /* Top Navigation Bar */
+  .top-nav{
+    background:var(--card);
+    border-bottom:1px solid rgba(15,23,42,0.06);
+    box-shadow:var(--shadow-2);
+    position:sticky;
+    top:0;
+    z-index:100;
+  }
+  .nav-container{
+    max-width:1600px;
+    margin:0 auto;
+    padding:16px 28px;
+    display:flex;
+    align-items:center;
+    gap:32px;
+  }
+  .nav-logo{
+    font-size:18px;
+    font-weight:700;
+    color:var(--accent);
+    text-decoration:none;
+  }
+  .nav-tabs{
+    display:flex;
+    gap:4px;
+    flex:1;
+  }
+  .nav-tab{
+    padding:8px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:500;
+    color:var(--muted);
+    transition:all .15s;
+    border:none;
+    background:transparent;
+  }
+  .nav-tab:hover{
+    background:#f1f5f9;
+    color:#0f172a;
+  }
+
+  .wrap{max-width:1600px;margin:0 auto;padding:28px}
+  header{margin-bottom:20px}
+  h1{font-size:20px;margin:0 0 4px}
+  p.lead{margin:0;color:var(--muted);font-size:13px}
+
+  .grid{display:grid;grid-template-columns:1fr 1000px;gap:20px;align-items:start}
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:16px;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(15,23,42,0.03);
+  }
+
+  /* Stats Cards */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .stat-card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:20px;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(15,23,42,0.03);
+  }
+  .stat-label{
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .stat-value{
+    font-size:32px;
+    font-weight:700;
+    color:#0f172a;
+  }
+  .stat-change{
+    font-size:12px;
+    margin-top:8px;
+    color:#10b981;
+  }
+  .stat-change.negative{
+    color:#ef4444;
+  }
+
+  /* Import/Export area */
+  .import-area{
+    border:2px dashed #e6eef8;
+    border-radius:var(--radius);
+    padding:24px;
+    text-align:center;
+    margin-top:16px;
+    transition:all .2s;
+  }
+  .import-area:hover{
+    border-color:var(--accent);
+    background:#f9fbff;
+  }
+  .import-area.dragover{
+    border-color:var(--accent);
+    background:#e0f2fe;
+  }
+  .file-input-label{
+    display:inline-block;
+    padding:10px 14px;
+    background:var(--accent);
+    color:white;
+    font-weight:600;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:var(--shadow-2);
+  }
+  .file-input-label:hover{
+    opacity:0.9;
+  }
+  input[type="file"]{
+    display:none;
+  }
+
+  /* Alert messages */
+  .alert{
+    padding:12px 16px;
+    border-radius:10px;
+    margin-top:16px;
+    font-size:13px;
+  }
+  .alert.success{
+    background:#d1fae5;
+    color:#065f46;
+    border:1px solid #6ee7b7;
+  }
+  .alert.error{
+    background:#fee2e2;
+    color:#991b1b;
+    border:1px solid #fca5a5;
+  }
+  .alert.info{
+    background:#dbeafe;
+    color:#1e40af;
+    border:1px solid #93c5fd;
+  }
+
+  .chart-placeholder{
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius:var(--radius);
+    padding:40px;
+    text-align:center;
+    color:white;
+    min-height:300px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+  }
+
+  .steps .step{margin-bottom:14px}
+  label.small{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+  input[type="text"], input[type="number"], textarea, select{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid #e6eef8;
+    background:transparent;
+    outline:none;
+    font-size:14px;
+  }
+  input:focus, textarea:focus, select:focus{box-shadow:0 6px 18px rgba(0,122,255,0.08); border-color:var(--accent)}
+
+  .btn{
+    display:inline-block;
+    padding:10px 14px;
+    background:var(--accent);
+    color:white;font-weight:600;border-radius:10px;border:none;cursor:pointer;
+    box-shadow:var(--shadow-2);
+  }
+  .btn.ghost{
+    background:transparent;color:var(--muted);border:1px solid #eef3fb;
+  }
+  .btn.success{
+    background:#10b981;color:white;
+  }
+  .btn.danger{
+    background:#ef4444;color:white;
+  }
+
+  #availableBlocks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .offer-item{
+    padding:10px 12px;border-radius:10px;border:1px solid #eef3fb;background:#fbfdff;color:#0b1220;
+    cursor:pointer;font-size:13px;box-shadow:0 2px 6px rgba(10,20,40,0.04);
+  }
+  .offer-item:hover{transform:translateY(-4px);transition:all .12s}
+
+  #chosenBlocks .offer-block{
+    display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;margin-bottom:8px;
+    background:#fcfeff;border:1px solid #eef3fb;
+  }
+  .muted{color:var(--muted);font-size:13px}
+
+  .small-pill{
+    font-size:12px;padding:6px 8px;border-radius:999px;background:#f1f6ff;color:var(--accent);border:1px solid rgba(0,122,255,0.08);
+  }
+  .delete-btn{background:transparent;border:1px solid #f0f3f8;padding:6px 8px;border-radius:8px;cursor:pointer;color:var(--muted)}
+  .delete-btn:hover{background:#fff0f0;color:#c43b3b}
+
+  .table-wrapper{
+    position:relative;
+    margin-top:8px;
+  }
+  .table-scroll{
+    max-height:800px;
+    overflow-y:auto;
+    overflow-x:visible;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    position:relative;
+  }
+  thead{
+    position:sticky;
+    top:0;
+    background:var(--card);
+    z-index:10;
+  }
+  thead th{
+    font-size:12px;
+    text-align:left;
+    color:var(--muted);
+    padding:10px 8px 8px 8px;
+    position:relative;
+    cursor:pointer;
+    user-select:none;
+    border-bottom:1px solid #f1f5f9;
+  }
+  thead th:hover{background:#f9fafb}
+  
+  .th-content{
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .sort-icon{
+    font-size:10px;
+    color:#9ca3af;
+    transition:transform .2s;
+  }
+  .sort-icon.active{
+    color:var(--accent);
+  }
+  .sort-icon.desc{
+    transform:rotate(180deg);
+  }
+
+  .filter-popup{
+    position:fixed;
+    background:white;
+    border-radius:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    padding:12px;
+    min-width:200px;
+    z-index:1000;
+    display:none;
+    pointer-events:none;
+  }
+  .filter-popup.active{
+    display:block;
+    pointer-events:auto;
+  }
+  .filter-popup-option{
+    padding:8px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+    transition:background .12s;
+  }
+  .filter-popup-option:hover{
+    background:#f1f5f9;
+  }
+  .filter-popup-option.active{
+    background:#e0f2fe;
+    color:var(--accent);
+    font-weight:600;
+  }
+  .filter-popup-divider{
+    height:1px;
+    background:#e5e7eb;
+    margin:8px 0;
+  }
+  .filter-popup-search{
+    margin-top:8px;
+  }
+  .filter-popup-search input{
+    width:100%;
+    padding:6px 8px;
+    border-radius:6px;
+    border:1px solid #e5e7eb;
+    font-size:12px;
+    outline:none;
+  }
+  .filter-popup-search input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(0,122,255,0.1);
+  }
+
+  tbody td{padding:12px 8px;border-top:1px solid #f1f5f9;font-size:14px;background:transparent}
+  tbody tr{transition:background .12s}
+  tbody tr:hover{background:#fbfdff}
+  tbody tr:nth-child(even){background:#f9fafb}
+  tbody tr:nth-child(even):hover{background:#f0f4f8}
+  
+  .order-row{cursor:pointer}
+  .status-pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(10,20,40,0.03)}
+
+  #orderDetails .detail-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 0}
+  .inline-edit{display:inline-block;padding:6px 8px;border-radius:8px;border:1px dashed #e6eef8;background:transparent;font-size:13px}
+  .edit-btn{background:transparent;border:1px solid #eef3fb;padding:6px 8px;border-radius:8px;cursor:pointer;color:var(--muted)}
+
+  .modal-overlay{
+    display:none;
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    background:rgba(0,0,0,0.4);
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+  }
+  .modal-overlay.active{display:flex}
+  .modal-box{
+    background:white;
+    border-radius:var(--radius);
+    padding:20px;
+    max-width:500px;
+    width:90%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-box h3{margin-top:0}
+
+  .tab-content{
+    display:none;
+  }
+  .tab-content.active{
+    display:block;
+  }
+
+  .month-selector{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-bottom:16px;
+  }
+  .month-selector select{
+    width:auto;
+    padding:8px 12px;
+  }
+
+  @media (max-width:980px){ 
+    .grid{grid-template-columns:1fr; } 
+    .stats-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+  <nav class="top-nav">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">📦 OrderFlow</a>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="nav-tab" onclick="switchTab('orders')">Zamówienia</button>
+        <button class="nav-tab" onclick="switchTab('stats')">Statystyki</button>
+        <button class="nav-tab" onclick="switchTab('reports')">Raporty</button>
+        <button class="nav-tab" onclick="switchTab('settings')">⚙️ Ustawienia</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <!-- TAB: Dashboard -->
+    <div id="tab-dashboard" class="tab-content active">
+      <header>
+        <h1>Dashboard</h1>
+        <p class="lead">Przegląd najważniejszych wskaźników.</p>
+      </header>
+
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Ostatnie zamówienia</h3>
+        <div style="overflow:auto;max-height:400px">
+          <table id="recentOrdersTable">
+            <thead>
+              <tr>
+                <th>Nr</th>
+                <th>Nick</th>
+                <th>Cena</th>
+                <th>Status</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Orders -->
+    <div id="tab-orders" class="tab-content">
+      <header>
+        <h1>Zamówienia</h1>
+        <p class="lead">Zarządzaj zamówieniami i twórz nowe.</p>
+      </header>
+
+      <div class="grid">
+        <div>
+          <div class="card steps" id="stepArea">
+            <div class="step" id="step1">
+              <h3 style="margin:0 0 8px">Krok 1 — Dane klienta</h3>
+              <label class="small">Nick kupującego</label>
+              <input id="nickname" type="text" placeholder="np. janek123" />
+              <label class="small" style="margin-top:10px">Link do profilu (opcjonalnie)</label>
+              <input id="profileLink" type="text" placeholder="https://vinted.pl/..." />
+              <div style="margin-top:12px"><button class="btn" onclick="goToStep2()">Dalej — wybór pozycji</button></div>
+            </div>
+
+            <div class="step" id="step2" style="display:none">
+              <h3 style="margin:0 0 8px">Krok 2 — Wybór pozycji</h3>
+              <div id="availableBlocks" aria-hidden="false"></div>
+
+              <div style="margin-top:12px;padding:12px;border-radius:10px;background:#fbfdff;border:1px solid #eef3fb">
+                <label class="small">Dodaj własną pozycję</label>
+                <input id="customName" type="text" placeholder="Nazwa (np. Kalkomania special)" />
+                <input id="customPrice" type="number" placeholder="Cena (PLN)" style="margin-top:8px" />
+                <div style="margin-top:8px"><button class="btn" onclick="addCustomBlock()">Dodaj własny blok</button></div>
+              </div>
+
+              <h4 style="margin-top:14px">Wybrane pozycje</h4>
+              <div id="chosenBlocks" style="margin-top:8px"></div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+                <div class="muted">Suma (sugestia ze zniżkami): <strong id="totalPrice" style="color:var(--accent)">0.00</strong> zł</div>
+                <div><button class="btn" onclick="goToStep3()">Dalej — ustal cenę</button></div>
+              </div>
+            </div>
+
+            <div class="step" id="step3" style="display:none">
+              <h3 style="margin:0 0 8px">Krok 3 — Ustal Twoją cenę</h3>
+              <label class="small">Cena końcowa (po rabacie) — możesz nadpisać</label>
+              <input id="finalPrice" type="number" placeholder="np. 45.50" />
+              <div style="margin-top:10px">
+                <button class="btn" onclick="saveOrder()">Zapisz zamówienie</button>
+                <button class="btn ghost" style="margin-left:8px" onclick="backToStart()">Anuluj</button>
+              </div>
+              <div class="muted" style="margin-top:10px;font-size:13px">* Sugestia ceny obliczana automatycznie na podstawie wybranych pozycji i reguł rabatowych.</div>
+            </div>
+          </div>
+
+          <div id="orderDetails" class="card" style="display:none;margin-top:14px"></div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3 style="margin-top:0">Lista zamówień</h3>
+
+            <div class="table-wrapper">
+              <div class="table-scroll">
+                <table id="ordersTable">
+                  <thead>
+                    <tr>
+                      <th onclick="toggleFilterPopup(event, 0)">
+                        <div class="th-content">
+                          Nr
+                          <span class="sort-icon">▼</span>
+                        </div>
+                      </th>
+                      <th onclick="toggleFilterPopup(event, 1)">
+                        <div class="th-content">
+                          Nick
+                          <span class="sort-icon">▼</span>
+                        </div>
+                      </th>
+                      <th onclick="toggleFilterPopup(event, 2)">
+                        <div class="th-content">
+                          Cena
+                          <span class="sort-icon">▼</span>
+                        </div>
+                      </th>
+                      <th onclick="toggleFilterPopup(event, 3)">
+                        <div class="th-content">
+                          Status
+                          <span class="sort-icon">▼</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Statistics -->
+    <div id="tab-stats" class="tab-content">
+      <header>
+        <h1>Statystyki</h1>
+        <p class="lead">Analiza przychodów i zamówień w czasie.</p>
+      </header>
+
+      <div class="month-selector">
+        <label class="small" style="margin:0">Wybierz miesiąc:</label>
+        <select id="monthSelect" onchange="updateStatsForMonth()"></select>
+        <button class="btn ghost" onclick="showAllTimeStats()">Cały okres</button>
+      </div>
+
+      <div class="stats-grid" id="monthStatsGrid"></div>
+
+      <div class="card" style="margin-top:20px">
+        <h3 style="margin-top:0">Wykres przychodów (w przygotowaniu)</h3>
+        <div class="chart-placeholder">
+          <div>
+            <div style="font-size:48px;margin-bottom:12px">📊</div>
+            <div style="font-size:18px;font-weight:600;margin-bottom:8px">Wykres w przygotowaniu</div>
+            <div style="font-size:14px;opacity:0.9">Wizualizacja przychodów w czasie pojawi się wkrótce</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Reports -->
+    <div id="tab-reports" class="tab-content">
+      <header>
+        <h1>Raporty i Ewidencja</h1>
+        <p class="lead">Pobierz raporty i przeglądaj historię.</p>
+      </header>
+
+      <div class="card">
+        <h3 style="margin-top:0">Generuj raport</h3>
+        
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;margin-top:16px">
+          <div>
+            <label class="small">Rodzaj raportu</label>
+            <select id="reportType">
+              <option value="all">Wszystkie zamówienia</option>
+              <option value="completed">Tylko zrealizowane</option>
+              <option value="pending">W trakcie realizacji</option>
+              <option value="cancelled">Anulowane</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="small">Format</label>
+            <select id="reportFormat">
+              <option value="csv">CSV (Excel)</option>
+              <option value="json">JSON</option>
+              <option value="txt">TXT</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:16px">
+          <button class="btn success" onclick="generateReport()">📥 Pobierz raport</button>
+          <button class="btn ghost" style="margin-left:8px" onclick="exportAllData()">💾 Eksportuj wszystkie dane</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <h3 style="margin-top:0">Pełna ewidencja zamówień</h3>
+        <div style="overflow:auto;max-height:600px;margin-top:12px">
+          <table id="fullRecordTable">
+            <thead>
+              <tr>
+                <th>Nr zamówienia</th>
+                <th>Data utworzenia</th>
+                <th>Klient</th>
+                <th>Pozycje</th>
+                <th>Cena</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Settings -->
+    <div id="tab-settings" class="tab-content">
+      <header>
+        <h1>⚙️ Ustawienia i Migracja Danych</h1>
+        <p class="lead">Eksportuj i importuj dane między urządzeniami oraz migruj do bazy danych.</p>
+      </header>
+
+      <!-- Migration to API -->
+      <div class="card" style="border:2px solid #dbeafe">
+        <h3 style="margin-top:0">🚀 Migracja do bazy danych</h3>
+        <p class="muted">Przenieś dane z localStorage do bazy danych w chmurze (Cloudflare D1).</p>
+        
+        <div style="margin-top:16px">
+          <button class="btn success" onclick="migrateToAPI()">
+            🔄 Migruj dane z localStorage do bazy
+          </button>
+          <div class="muted" style="margin-top:8px;font-size:12px">
+            Ta operacja skopiuje wszystkie zamówienia z localStorage do bazy danych
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Section -->
+      <div class="card" style="margin-top:20px">
+        <h3 style="margin-top:0">📤 Eksport danych</h3>
+        <p class="muted">Pobierz wszystkie zamówienia, aby przenieść je na inny komputer lub stronę.</p>
+        
+        <div style="margin-top:16px">
+          <button class="btn success" onclick="exportForMigration()">
+            💾 Eksportuj dane do przeniesienia
+          </button>
+          <div class="muted" style="margin-top:8px;font-size:12px">
+            Plik JSON ze wszystkimi zamówieniami gotowy do importu
+          </div>
+        </div>
+      </div>
+
+      <!-- Import Section -->
+      <div class="card" style="margin-top:20px">
+        <h3 style="margin-top:0">📥 Import danych</h3>
+        <p class="muted">Wgraj plik z danymi wyeksportowanymi z innego urządzenia.</p>
+        
+        <div class="import-area" id="dropZone">
+          <div style="font-size:48px;margin-bottom:12px">📂</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:8px">
+            Przeciągnij plik tutaj lub kliknij, aby wybrać
+          </div>
+          <div class="muted" style="margin-bottom:16px">Akceptowane formaty: JSON</div>
+          
+          <label for="fileInput" class="file-input-label">
+            📁 Wybierz plik
+          </label>
+          <input type="file" id="fileInput" accept=".json" onchange="handleFileSelect(event)">
+        </div>
+
+        <div id="importMessage"></div>
+
+        <div style="margin-top:16px;padding:12px;background:#fef3c7;border-radius:10px;border:1px solid #fbbf24">
+          <strong style="color:#92400e">⚠️ Uwaga:</strong>
+          <div class="muted" style="color:#92400e;margin-top:4px;font-size:13px">
+            Import danych <strong>doda</strong> nowe zamówienia do istniejących. Jeśli chcesz zastąpić wszystkie dane, najpierw usuń istniejące zamówienia poniżej.
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card" style="margin-top:20px;border:2px solid #fee2e2">
+        <h3 style="margin-top:0;color:#dc2626">⚠️ Strefa zagrożenia</h3>
+        
+        <div style="padding:16px;background:#fee2e2;border-radius:10px;margin-top:12px">
+          <strong style="color:#991b1b">Usuń wszystkie dane</strong>
+          <p class="muted" style="color:#991b1b;margin:8px 0">
+            Ta operacja jest nieodwracalna. Wszystkie zamówienia zostaną trwale usunięte.
+          </p>
+          <button class="btn danger" onclick="clearAllData()">
+            🗑️ Usuń wszystkie zamówienia
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="card" style="margin-top:20px">
+        <h3 style="margin-top:0">📊 Informacje o danych</h3>
+        <div id="dataStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-popup" id="filterPopup0"></div>
+  <div class="filter-popup" id="filterPopup1"></div>
+  <div class="filter-popup" id="filterPopup2"></div>
+  <div class="filter-popup" id="filterPopup3"></div>
+
+  <div class="modal-overlay" id="addItemModal">
+    <div class="modal-box">
+      <h3>Dodaj pozycję do zamówienia</h3>
+      
+      <label class="small">Wybierz z oferty:</label>
+      <div id="modalAvailableBlocks" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+
+      <hr style="margin:16px 0;border:none;border-top:1px solid #eee">
+
+      <label class="small">Lub dodaj własną:</label>
+      <input id="modalCustomName" type="text" placeholder="Nazwa pozycji" style="margin-top:6px" />
+      <input id="modalCustomPrice" type="number" placeholder="Cena (PLN)" style="margin-top:8px" />
+
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn success" onclick="confirmAddItemToOrder()">Dodaj</button>
+        <button class="btn ghost" onclick="closeAddItemModal()">Anuluj</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ==================== API CONFIGURATION ====================
+const API_BASE = '/api';
+const USE_API = true; // true = baza danych, false = localStorage
+
+// ==================== API HELPER FUNCTIONS ====================
+async function apiGetOrders() {
+  const response = await fetch(`${API_BASE}/orders`);
+  if (!response.ok) throw new Error('Błąd pobierania zamówień');
+  return await response.json();
+}
+
+async function apiCreateOrder(order) {
+  const response = await fetch(`${API_BASE}/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(order)
+  });
+  if (!response.ok) throw new Error('Błąd tworzenia zamówienia');
+  return await response.json();
+}
+
+async function apiUpdateOrder(orderId, updates) {
+  const response = await fetch(`${API_BASE}/order/${orderId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates)
+  });
+  if (!response.ok) throw new Error('Błąd aktualizacji zamówienia');
+  return await response.json();
+}
+
+async function apiDeleteOrder(orderId) {
+  const response = await fetch(`${API_BASE}/order/${orderId}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Błąd usuwania zamówienia');
+  return await response.json();
+}
+
+async function migrateToAPI() {
+  const localOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+  if (localOrders.length === 0) {
+    alert('Brak danych do migracji w localStorage');
+    return;
+  }
+  
+  if (!confirm(`Zmigrować ${localOrders.length} zamówień do bazy danych?`)) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE}/migrate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orders: localOrders })
+    });
+    
+    const result = await response.json();
+    alert(`Migracja zakończona!\nZaimportowano: ${result.imported}\nPominięto (duplikaty): ${result.skipped}`);
+    refreshUI();
+  } catch (error) {
+    alert(`Błąd migracji: ${error.message}`);
+  }
+}
+
+// ==================== DATA MANAGEMENT ====================
+async function getOrders() {
+  if (USE_API) {
+    return await apiGetOrders();
+  } else {
+    return JSON.parse(localStorage.getItem('orders') || '[]');
+  }
+}
+
+async function saveOrderToStorage(order) {
+  if (USE_API) {
+    await apiCreateOrder(order);
+  } else {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    orders.push(order);
+    localStorage.setItem('orders', JSON.stringify(orders));
+  }
+}
+
+async function updateOrderInStorage(orderId, updates) {
+  if (USE_API) {
+    await apiUpdateOrder(orderId, updates);
+  } else {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    const idx = orders.findIndex(o => o.orderId === orderId);
+    if (idx !== -1) {
+      orders[idx] = { ...orders[idx], ...updates };
+      localStorage.setItem('orders', JSON.stringify(orders));
+    }
+  }
+}
+
+async function deleteOrderFromStorage(orderId) {
+  if (USE_API) {
+    await apiDeleteOrder(orderId);
+  } else {
+    let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    orders = orders.filter(o => o.orderId !== orderId);
+    localStorage.setItem('orders', JSON.stringify(orders));
+  }
+}
+
+// ==================== OFFER BLOCKS & CHOSEN ITEMS ====================
+const offerBlocks = [
+  { name: "Kalkomania Lampy standard", price: 7 },
+  { name: "Kalkomania Lampy XL", price: 10 },
+  { name: "Kalkomania Carbon 3x5cm 4szt", price: 10 },
+  { name: "Kalkomania Tablice Rej. 5szt", price: 8 }
+];
+
+let chosen = [];
+let currentOrderIndexForAdding = null;
+let selectedItemForAdding = null;
+let currentlyViewedOrderIndex = null;
+let currentSort = { column: -1, direction: 'none' };
+let columnFilters = ['', '', '', ''];
+let activePopup = -1;
+let currentTab = 'dashboard';
+
+// ==================== TAB SWITCHING ====================
+function switchTab(tabName){
+  currentTab = tabName;
+  
+  document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.add('active');
+  
+  if(tabName === 'dashboard'){
+    loadDashboard();
+  } else if(tabName === 'orders'){
+    loadOrders();
+  } else if(tabName === 'stats'){
+    loadStatistics();
+  } else if(tabName === 'reports'){
+    loadReports();
+  } else if(tabName === 'settings'){
+    updateDataStats();
+  }
+}
+
+// ==================== DASHBOARD ====================
+async function loadDashboard(){
+  const orders = await getOrders();
+  
+  const stats = {
+    total: orders.length,
+    inProgress: orders.filter(o => o.status && !o.status.includes('✔️') && !o.status.includes('❌')).length,
+    completed: orders.filter(o => o.status && o.status.includes('✔️')).length,
+    cancelled: orders.filter(o => o.status && o.status.includes('❌')).length,
+    revenue: orders.filter(o => o.status && o.status.includes('✔️')).reduce((sum, o) => sum + (o.price || 0), 0),
+    pending: orders.filter(o => o.status && (o.status.includes('🎨') || o.status.includes('🖨️'))).length
+  };
+  
+  const statsGrid = document.getElementById('statsGrid');
+  statsGrid.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Wszystkie zamówienia</div>
+      <div class="stat-value">${stats.total}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">W trakcie realizacji</div>
+      <div class="stat-value">${stats.inProgress}</div>
+      <div class="stat-change">📦 ${stats.pending} w produkcji</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Zrealizowane</div>
+      <div class="stat-value">${stats.completed}</div>
+      <div class="stat-change">✅ Odebrane</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Przychód (zrealizowane)</div>
+      <div class="stat-value">${stats.revenue.toFixed(2)} zł</div>
+      <div class="stat-change">💰 Ze zrealizowanych</div>
+    </div>
+  `;
+  
+  const recentOrders = [...orders].reverse().slice(0, 10);
+  const tbody = document.querySelector('#recentOrdersTable tbody');
+  tbody.innerHTML = '';
+  
+  recentOrders.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.onclick = () => { switchTab('orders'); setTimeout(() => showDetails(orders.indexOf(o)), 100); };
+    
+    tr.innerHTML = `
+      <td style="font-weight:600">${o.orderId || '-'}</td>
+      <td>${o.nickname || '-'}</td>
+      <td>${(o.price || 0).toFixed(2)} zł</td>
+      <td><span class="status-pill">${o.status || '-'}</span></td>
+      <td class="muted">${new Date(o.createdAt || Date.now()).toLocaleDateString()}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ==================== STATISTICS ====================
+async function loadStatistics(){
+  populateMonthSelect();
+  showAllTimeStats();
+}
+
+async function populateMonthSelect(){
+  const select = document.getElementById('monthSelect');
+  select.innerHTML = '';
+  
+  const orders = await getOrders();
+  const months = new Set();
+  
+  orders.forEach(o => {
+    if(o.createdAt){
+      const date = new Date(o.createdAt);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      months.add(monthKey);
+    }
+  });
+  
+  [...months].sort().reverse().forEach(month => {
+    const option = document.createElement('option');
+    option.value = month;
+    const [year, m] = month.split('-');
+    option.textContent = `${m}/${year}`;
+    select.appendChild(option);
+  });
+}
+
+async function updateStatsForMonth(){
+  const selectedMonth = document.getElementById('monthSelect').value;
+  const orders = await getOrders();
+  
+  const monthOrders = orders.filter(o => {
+    if(!o.createdAt) return false;
+    const date = new Date(o.createdAt);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    return monthKey === selectedMonth;
+  });
+  
+  displayMonthStats(monthOrders, selectedMonth);
+}
+
+async function showAllTimeStats(){
+  const orders = await getOrders();
+  displayMonthStats(orders, 'Cały okres');
+}
+
+function displayMonthStats(orders, period){
+  const stats = {
+    total: orders.length,
+    completed: orders.filter(o => o.status && o.status.includes('✔️')).length,
+    revenue: orders.filter(o => o.status && o.status.includes('✔️')).reduce((sum, o) => sum + (o.price || 0), 0),
+    pending: orders.filter(o => o.status && !o.status.includes('✔️') && !o.status.includes('❌')).length,
+    cancelled: orders.filter(o => o.status && o.status.includes('❌')).length
+  };
+  
+  const grid = document.getElementById('monthStatsGrid');
+  grid.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Okres: ${period}</div>
+      <div class="stat-value">${stats.total}</div>
+      <div class="stat-change">Wszystkich zamówień</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Zrealizowane</div>
+      <div class="stat-value">${stats.completed}</div>
+      <div class="stat-change">✅ ${((stats.completed / stats.total) * 100 || 0).toFixed(1)}% ogółu</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Przychód</div>
+      <div class="stat-value">${stats.revenue.toFixed(2)} zł</div>
+      <div class="stat-change">💰 Ze zrealizowanych</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">W trakcie / Anulowane</div>
+      <div class="stat-value">${stats.pending} / ${stats.cancelled}</div>
+      <div class="stat-change muted">📦 Realizacja | ❌ Anulowane</div>
+    </div>
+  `;
+}
+
+// ==================== REPORTS ====================
+async function loadReports(){
+  const tbody = document.querySelector('#fullRecordTable tbody');
+  tbody.innerHTML = '';
+  
+  const orders = await getOrders();
+  
+  orders.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:600">${o.orderId || '-'}</td>
+      <td class="muted">${new Date(o.createdAt || Date.now()).toLocaleString()}</td>
+      <td>${o.nickname || '-'}</td>
+      <td>${o.items ? o.items.length : 0} poz.</td>
+      <td>${(o.price || 0).toFixed(2)} zł</td>
+      <td><span class="status-pill">${o.status || '-'}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function generateReport(){
+  const type = document.getElementById('reportType').value;
+  const format = document.getElementById('reportFormat').value;
+  
+  let orders = await getOrders();
+  
+  if(type === 'completed'){
+    orders = orders.filter(o => o.status && o.status.includes('✔️'));
+  } else if(type === 'pending'){
+    orders = orders.filter(o => o.status && !o.status.includes('✔️') && !o.status.includes('❌'));
+  } else if(type === 'cancelled'){
+    orders = orders.filter(o => o.status && o.status.includes('❌'));
+  }
+  
+  if(format === 'csv'){
+    downloadCSV(orders);
+  } else if(format === 'json'){
+    downloadJSON(orders);
+  } else {
+    downloadTXT(orders);
+  }
+}
+
+function downloadCSV(orders){
+  let csv = 'Nr zamówienia,Data utworzenia,Klient,Profil,Liczba pozycji,Cena,Status\n';
+  
+  orders.forEach(o => {
+    csv += `"${o.orderId || ''}","${new Date(o.createdAt || Date.now()).toLocaleString()}","${o.nickname || ''}","${o.profileLink || ''}","${o.items ? o.items.length : 0}","${(o.price || 0).toFixed(2)}","${o.status || ''}"\n`;
+  });
+  
+  downloadFile(csv, 'raport-zamowienia.csv', 'text/csv');
+}
+
+function downloadJSON(orders){
+  const json = JSON.stringify(orders, null, 2);
+  downloadFile(json, 'raport-zamowienia.json', 'application/json');
+}
+
+function downloadTXT(orders){
+  let txt = '=== RAPORT ZAMÓWIEŃ ===\n\n';
+  txt += `Wygenerowano: ${new Date().toLocaleString()}\n`;
+  txt += `Liczba zamówień: ${orders.length}\n\n`;
+  
+  orders.forEach((o, i) => {
+    txt += `--- Zamówienie ${i + 1} ---\n`;
+    txt += `Nr: ${o.orderId || '-'}\n`;
+    txt += `Data: ${new Date(o.createdAt || Date.now()).toLocaleString()}\n`;
+    txt += `Klient: ${o.nickname || '-'}\n`;
+    txt += `Pozycji: ${o.items ? o.items.length : 0}\n`;
+    txt += `Cena: ${(o.price || 0).toFixed(2)} zł\n`;
+    txt += `Status: ${o.status || '-'}\n\n`;
+  });
+  
+  downloadFile(txt, 'raport-zamowienia.txt', 'text/plain');
+}
+
+async function exportAllData(){
+  const orders = await getOrders();
+  const data = {
+    exportDate: new Date().toISOString(),
+    ordersCount: orders.length,
+    orders: orders
+  };
+  
+  downloadFile(JSON.stringify(data, null, 2), 'backup-wszystkie-dane.json', 'application/json');
+}
+
+function downloadFile(content, filename, mimeType){
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== SETTINGS ====================
+async function exportForMigration(){
+  const orders = await getOrders();
+  
+  const exportData = {
+    version: "1.0",
+    exportDate: new Date().toISOString(),
+    ordersCount: orders.length,
+    orders: orders,
+    metadata: {
+      source: "OrderFlow System",
+      totalRevenue: orders.filter(o => o.status && o.status.includes('✔️')).reduce((sum, o) => sum + (o.price || 0), 0)
+    }
+  };
+  
+  const json = JSON.stringify(exportData, null, 2);
+  const filename = `orderflow-backup-${new Date().toISOString().slice(0,10)}.json`;
+  downloadFile(json, filename, 'application/json');
+  
+  showMessage('importMessage', 'success', `✅ Dane wyeksportowane! Zapisano ${orders.length} zamówień.`);
+}
+
+function handleFileSelect(event){
+  const file = event.target.files[0];
+  if(file){
+    importDataFromFile(file);
+  }
+}
+
+async function importDataFromFile(file){
+  const reader = new FileReader();
+  
+  reader.onload = async function(e){
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      if(!data.orders || !Array.isArray(data.orders)){
+        throw new Error('Nieprawidłowy format pliku');
+      }
+      
+      if (USE_API) {
+        // Import przez API
+        const response = await fetch(`${API_BASE}/migrate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orders: data.orders })
+        });
+        
+        const result = await response.json();
+        showMessage('importMessage', 'success', 
+          `✅ Import zakończony sukcesem! Dodano ${result.imported} zamówień. Pominięto ${result.skipped} duplikatów.`);
+      } else {
+        // Import do localStorage
+        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const newOrders = [...existingOrders, ...data.orders];
+        localStorage.setItem('orders', JSON.stringify(newOrders));
+        
+        showMessage('importMessage', 'success', 
+          `✅ Import zakończony sukcesem! Dodano ${data.orders.length} zamówień. Łącznie masz teraz ${newOrders.length} zamówień.`);
+      }
+      
+      updateDataStats();
+      refreshUI();
+      
+    } catch(error) {
+      showMessage('importMessage', 'error', 
+        `❌ Błąd importu: ${error.message}. Upewnij się, że plik jest prawidłowym eksportem z OrderFlow.`);
+    }
+  };
+  
+  reader.onerror = function(){
+    showMessage('importMessage', 'error', '❌ Błąd odczytu pliku.');
+  };
+  
+  reader.readAsText(file);
+}
+
+function showMessage(containerId, type, message){
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<div class="alert ${type}">${message}</div>`;
+  
+  setTimeout(() => {
+    container.innerHTML = '';
+  }, 5000);
+}
+
+async function clearAllData(){
+  if(!confirm('⚠️ CZY NA PEWNO?\n\nTa operacja USUŃ WSZYSTKIE zamówienia i NIE MOŻE BYĆ cofnięta.\n\nJeśli chcesz zachować kopię bezpieczeństwa, najpierw wyeksportuj dane.\n\nKliknij OK aby kontynuować usuwanie.')){
+    return;
+  }
+  
+  if(!confirm('To jest OSTATNIE OSTRZEŻENIE!\n\nWszystkie zamówienia zostaną TRWALE USUNIĘTE.\n\nCzy jesteś absolutnie pewien?')){
+    return;
+  }
+  
+  if (USE_API) {
+    alert('Usuwanie wszystkich danych z bazy nie jest jeszcze zaimplementowane. Użyj konsoli D1.');
+  } else {
+    localStorage.removeItem('orders');
+    showMessage('importMessage', 'success', '✅ Wszystkie dane zostały usunięte.');
+  }
+  
+  updateDataStats();
+  refreshUI();
+}
+
+async function updateDataStats(){
+  const orders = await getOrders();
+  const stats = document.getElementById('dataStats');
+  
+  const size = new Blob([JSON.stringify(orders)]).size;
+  const sizeKB = (size / 1024).toFixed(2);
+  
+  stats.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px">
+      <div>
+        <div class="stat-label">Liczba zamówień</div>
+        <div class="stat-value" style="font-size:24px">${orders.length}</div>
+      </div>
+      <div>
+        <div class="stat-label">Rozmiar danych</div>
+        <div class="stat-value" style="font-size:24px">${sizeKB} KB</div>
+      </div>
+      <div>
+        <div class="stat-label">Ostatnia modyfikacja</div>
+        <div class="stat-value" style="font-size:18px">${orders.length > 0 ? new Date(orders[orders.length-1].createdAt).toLocaleDateString() : '-'}</div>
+      </div>
+    </div>
+  `;
+}
+
+// Drag & Drop support
+document.addEventListener('DOMContentLoaded', function(){
+  const dropZone = document.getElementById('dropZone');
+  
+  if(dropZone){
+    dropZone.addEventListener('dragover', function(e){
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    
+    dropZone.addEventListener('dragleave', function(e){
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+    });
+    
+    dropZone.addEventListener('drop', function(e){
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      
+      const files = e.dataTransfer.files;
+      if(files.length > 0){
+        importDataFromFile(files[0]);
+      }
+    });
+  }
+  
+  updateDataStats();
+  renderBlocks();
+  loadDashboard();
+});
+
+// ==================== ORDER CREATION ====================
+function renderBlocks(){
+  const c = document.getElementById('availableBlocks');
+  c.innerHTML = '';
+  offerBlocks.forEach((b,i) => {
+    const el = document.createElement('div');
+    el.className = 'offer-item';
+    el.textContent = `${b.name} — ${Number(b.price).toFixed(2)} zł`;
+    el.onclick = () => { chosen.push({ name: b.name, price: Number(b.price) }); renderChosen(); };
+    c.appendChild(el);
+  });
+}
+
+function addCustomBlock(){
+  const name = document.getElementById('customName').value.trim();
+  const price = Number(document.getElementById('customPrice').value);
+  if (!name || isNaN(price)) return alert('Podaj nazwę i poprawną cenę.');
+  chosen.push({ name, price });
+  document.getElementById('customName').value='';
+  document.getElementById('customPrice').value='';
+  renderChosen();
+}
+
+function getDisplayPriceInfo(item, items) {
+  const isKalko7 = /kalkomania/i.test(item.name) && Math.abs(item.price - 7) < 0.001;
+  if (!isKalko7) return { original: null, current: item.price, label: '' };
+
+  const kalkoItems = items.filter(it => /kalkomania/i.test(it.name) && Math.abs(it.price - 7) < 0.001);
+  if (kalkoItems.length < 2) return { original: null, current: item.price, label: '' };
+
+  const itemIndex = kalkoItems.indexOf(item);
+  if (itemIndex === -1) return { original: null, current: item.price, label: '' };
+
+  if (itemIndex < Math.floor(kalkoItems.length / 2) * 2) {
+    return {
+      original: 7.0,
+      current: 6.0,
+      label: 'Rabat podwójny set lamp za 12 zł'
+    };
+  }
+  
+  return { original: null, current: item.price, label: '' };
+}
+
+function calculateSuggestedTotal(items){
+  const kalko7Items = items.filter(it => /kalkomania/i.test(it.name) && Math.abs(it.price - 7) < 0.001);
+  const otherItems = items.filter(it => !(/kalkomania/i.test(it.name) && Math.abs(it.price - 7) < 0.001));
+
+  let total = 0;
+  const pairs = Math.floor(kalko7Items.length / 2);
+  const leftover = kalko7Items.length % 2;
+  total += pairs * 12 + leftover * 7;
+
+  otherItems.forEach(it => {
+    total += Number(it.price);
+  });
+
+  return total;
+}
+
+function renderChosen(){
+  const container = document.getElementById('chosenBlocks');
+  container.innerHTML = '';
+
+  chosen.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'offer-block';
+
+    const priceInfo = getDisplayPriceInfo(item, chosen);
+    let priceHTML = `${priceInfo.current.toFixed(2)} zł`;
+    if (priceInfo.original !== null && priceInfo.original !== priceInfo.current) {
+      priceHTML = `<span style="text-decoration:line-through;color:#999">${priceInfo.original.toFixed(2)} zł</span> <strong>${priceInfo.current.toFixed(2)} zł</strong>`;
+      if (priceInfo.label) {
+        priceHTML += `<div class="small-pill" style="margin-top:4px">${priceInfo.label}</div>`;
+      }
+    }
+
+    row.innerHTML = `
+      <div>
+        <div style="font-weight:600">${item.name}</div>
+        <div>${priceHTML}</div>
+      </div>
+      <button class="delete-btn" onclick="removeChosen(${idx})">🗑️</button>
+    `;
+    container.appendChild(row);
+  });
+
+  const suggestedTotal = calculateSuggestedTotal(chosen);
+  document.getElementById('totalPrice').textContent = suggestedTotal.toFixed(2);
+}
+
+function removeChosen(idx){
+  chosen.splice(idx,1);
+  renderChosen();
+}
+
+function goToStep2(){
+  const nn = document.getElementById('nickname').value.trim();
+  if(!nn) return alert('Podaj nick kupującego.');
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+  renderChosen();
+}
+
+function goToStep3(){
+  if(chosen.length===0) return alert('Wybierz przynajmniej jedną pozycję.');
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step3').style.display='block';
+  document.getElementById('finalPrice').value = calculateSuggestedTotal(chosen).toFixed(2);
+}
+
+function backToStart(){
+  chosen=[];
+  document.getElementById('step3').style.display='none';
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step1').style.display='block';
+  document.getElementById('nickname').value='';
+  document.getElementById('profileLink').value='';
+  renderChosen();
+}
+
+async function saveOrder(){
+  const nickname = document.getElementById('nickname').value.trim();
+  if (!nickname) return alert('Brakuje nicku.');
+  if (chosen.length === 0) return alert('Brakuje pozycji.');
+
+  const priceVal = document.getElementById('finalPrice').value;
+  if (priceVal === '' || isNaN(Number(priceVal))) return alert('Podaj końcową cenę.');
+
+  const order = {
+    orderId: generateOrderId(),
+    nickname,
+    profileLink: document.getElementById('profileLink').value.trim(),
+    items: chosen.map(i => ({ name: i.name, price: Number(i.price) })),
+    price: Number(priceVal),
+    status: "🎨 W trakcie projektowania",
+    createdAt: new Date().toISOString()
+  };
+  
+  try {
+    await saveOrderToStorage(order);
+    
+    chosen = [];
+    document.getElementById('finalPrice').value = '';
+    document.getElementById('step3').style.display = 'none';
+    document.getElementById('step1').style.display = 'block';
+    document.getElementById('nickname').value = '';
+    document.getElementById('profileLink').value = '';
+    
+    refreshUI();
+    alert('Zamówienie zapisane.');
+  } catch (error) {
+    alert(`Błąd: ${error.message}`);
+  }
+}
+
+function generateOrderId(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  const h = String(now.getHours()).padStart(2,'0');
+  const min = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  return `ORD-${y}${m}${d}-${h}${min}${s}`;
+}
+
+// ==================== ORDER LIST ====================
+async function loadOrders(){
+  renderBlocks();
+  const allOrders = await getOrders();
+  
+  let orders = [...allOrders];
+  
+  // Apply filters
+  orders = orders.filter(o => {
+    if(columnFilters[0] && !(o.orderId || '').toLowerCase().includes(columnFilters[0].toLowerCase())) return false;
+    if(columnFilters[1] && !(o.nickname || '').toLowerCase().includes(columnFilters[1].toLowerCase())) return false;
+    if(columnFilters[2] && !String(o.price || '').includes(columnFilters[2])) return false;
+    if(columnFilters[3] && !(o.status || '').toLowerCase().includes(columnFilters[3].toLowerCase())) return false;
+    return true;
+  });
+  
+  // Apply sorting
+  if(currentSort.column !== -1){
+    orders.sort((a,b) => {
+      let valA, valB;
+      if(currentSort.column === 0) { valA = a.orderId || ''; valB = b.orderId || ''; }
+      else if(currentSort.column === 1) { valA = a.nickname || ''; valB = b.nickname || ''; }
+      else if(currentSort.column === 2) { valA = a.price || 0; valB = b.price || 0; }
+      else if(currentSort.column === 3) { valA = a.status || ''; valB = b.status || ''; }
+      
+      if(typeof valA === 'string') valA = valA.toLowerCase();
+      if(typeof valB === 'string') valB = valB.toLowerCase();
+      
+      if(valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+      if(valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+  
+  const tbody = document.querySelector('#ordersTable tbody');
+  tbody.innerHTML = '';
+  
+  orders.forEach((o, idx) => {
+    const tr = document.createElement('tr');
+    tr.className = 'order-row';
+    tr.onclick = () => showDetails(allOrders.indexOf(o));
+    
+    tr.innerHTML = `
+      <td style="font-weight:600">${o.orderId || '-'}</td>
+      <td>${o.nickname || '-'}</td>
+      <td>${(o.price || 0).toFixed(2)} zł</td>
+      <td><span class="status-pill">${o.status || '-'}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleFilterPopup(event, colIndex){
+  event.stopPropagation();
+  
+  if(activePopup === colIndex){
+    closeAllPopups();
+    return;
+  }
+  
+  closeAllPopups();
+  activePopup = colIndex;
+  
+  const popup = document.getElementById(`filterPopup${colIndex}`);
+  const rect = event.currentTarget.getBoundingClientRect();
+  popup.style.top = `${rect.bottom + 5}px`;
+  popup.style.left = `${rect.left}px`;
+  
+  popup.innerHTML = '';
+  
+  // Sort options
+  const sortAsc = document.createElement('div');
+  sortAsc.className = 'filter-popup-option' + (currentSort.column === colIndex && currentSort.direction === 'asc' ? ' active' : '');
+  sortAsc.textContent = '↑ Rosnąco';
+  sortAsc.onclick = () => { setSorting(colIndex, 'asc'); closeAllPopups(); loadOrders(); };
+  popup.appendChild(sortAsc);
+  
+  const sortDesc = document.createElement('div');
+  sortDesc.className = 'filter-popup-option' + (currentSort.column === colIndex && currentSort.direction === 'desc' ? ' active' : '');
+  sortDesc.textContent = '↓ Malejąco';
+  sortDesc.onclick = () => { setSorting(colIndex, 'desc'); closeAllPopups(); loadOrders(); };
+  popup.appendChild(sortDesc);
+  
+  const divider = document.createElement('div');
+  divider.className = 'filter-popup-divider';
+  popup.appendChild(divider);
+  
+  // Filter input
+  const filterDiv = document.createElement('div');
+  filterDiv.className = 'filter-popup-search';
+  const filterInput = document.createElement('input');
+  filterInput.type = 'text';
+  filterInput.placeholder = 'Filtruj...';
+  filterInput.value = columnFilters[colIndex];
+  filterInput.oninput = (e) => { columnFilters[colIndex] = e.target.value; loadOrders(); };
+  filterDiv.appendChild(filterInput);
+  popup.appendChild(filterDiv);
+  
+  popup.classList.add('active');
+  
+  setTimeout(() => filterInput.focus(), 100);
+}
+
+function closeAllPopups(){
+  document.querySelectorAll('.filter-popup').forEach(p => p.classList.remove('active'));
+  activePopup = -1;
+}
+
+function setSorting(col, dir){
+  currentSort.column = col;
+  currentSort.direction = dir;
+  
+  document.querySelectorAll('.sort-icon').forEach(icon => {
+    icon.classList.remove('active', 'desc');
+  });
+  
+  const icons = document.querySelectorAll('.sort-icon');
+  if(icons[col]){
+    icons[col].classList.add('active');
+    if(dir === 'desc') icons[col].classList.add('desc');
+  }
+}
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.filter-popup') && !e.target.closest('th')){
+    closeAllPopups();
+  }
+});
+
+async function showDetails(orderIndex){
+  const orders = await getOrders();
+  const order = orders[orderIndex];
+  if(!order) return;
+  
+  currentlyViewedOrderIndex = orderIndex;
+  
+  const det = document.getElementById('orderDetails');
+  det.style.display = 'block';
+  det.innerHTML = `
+    <h3 style="margin-top:0">Szczegóły zamówienia: ${order.orderId}</h3>
+    
+    <div class="detail-row">
+      <span class="muted">Nick kupującego:</span>
+      <span class="inline-edit" id="detailNickname">${order.nickname || '-'}</span>
+      <button class="edit-btn" onclick="editField('nickname')">✏️</button>
+    </div>
+    
+    <div class="detail-row">
+      <span class="muted">Profil:</span>
+      <span class="inline-edit" id="detailProfileLink">${order.profileLink || '-'}</span>
+      <button class="edit-btn" onclick="editField('profileLink')">✏️</button>
+    </div>
+    
+    <div class="detail-row">
+      <span class="muted">Cena:</span>
+      <span class="inline-edit" id="detailPrice">${(order.price || 0).toFixed(2)} zł</span>
+      <button class="edit-btn" onclick="editField('price')">✏️</button>
+    </div>
+    
+    <div class="detail-row">
+      <span class="muted">Status:</span>
+      <select id="statusSelect" onchange="updateStatus(${orderIndex})">
+        <option ${order.status && order.status.includes('🎨') ? 'selected' : ''}>🎨 W trakcie projektowania</option>
+        <option ${order.status && order.status.includes('🖨️') ? 'selected' : ''}>🖨️ Druk w toku</option>
+        <option ${order.status && order.status.includes('📦') ? 'selected' : ''}>📦 Gotowe do wysyłki</option>
+        <option ${order.status && order.status.includes('✔️') ? 'selected' : ''}>✔️ Zrealizowane / Odebrane</option>
+        <option ${order.status && order.status.includes('❌') ? 'selected' : ''}>❌ Anulowane</option>
+      </select>
+    </div>
+    
+    <div class="detail-row">
+      <span class="muted">Data utworzenia:</span>
+      <span>${new Date(order.createdAt || Date.now()).toLocaleString()}</span>
+    </div>
+    
+    <hr style="margin:16px 0">
+    
+    <h4>Pozycje w zamówieniu</h4>
+    <div id="orderItemsList"></div>
+    <button class="btn ghost" style="margin-top:10px" onclick="openAddItemModal(${orderIndex})">+ Dodaj pozycję</button>
+    
+    <hr style="margin:16px 0">
+    
+    <div style="display:flex;gap:8px">
+      <button class="btn danger" onclick="removeOrder(${orderIndex})">🗑️ Usuń zamówienie</button>
+      <button class="btn ghost" onclick="closeDetails()">Zamknij</button>
+    </div>
+  `;
+  
+  renderOrderItems(order.items || []);
+}
+
+function renderOrderItems(items){
+  const list = document.getElementById('orderItemsList');
+  if(!list) return;
+  
+  list.innerHTML = '';
+  
+  items.forEach((it, idx) => {
+    const row = document.createElement('div');
+    row.className = 'offer-block';
+    row.innerHTML = `
+      <div>
+        <strong>${it.name}</strong>
+        <div class="muted">${Number(it.price).toFixed(2)} zł</div>
+      </div>
+      <button class="delete-btn" onclick="removeItemFromOrder(${idx})">🗑️</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function closeDetails(){
+  document.getElementById('orderDetails').style.display = 'none';
+  currentlyViewedOrderIndex = null;
+}
+
+async function editField(field){
+  const orders = await getOrders();
+  const order = orders[currentlyViewedOrderIndex];
+  if(!order) return;
+  
+  let newVal;
+  if(field === 'nickname'){
+    newVal = prompt('Nowy nick:', order.nickname || '');
+    if(newVal !== null){
+      order.nickname = newVal.trim();
+      await updateOrderInStorage(order.orderId, order);
+      document.getElementById('detailNickname').textContent = newVal.trim() || '-';
+    }
+  } else if(field === 'profileLink'){
+    newVal = prompt('Nowy link do profilu:', order.profileLink || '');
+    if(newVal !== null){
+      order.profileLink = newVal.trim();
+      await updateOrderInStorage(order.orderId, order);
+      document.getElementById('detailProfileLink').textContent = newVal.trim() || '-';
+    }
+  } else if(field === 'price'){
+    newVal = prompt('Nowa cena:', order.price || 0);
+    if(newVal !== null && !isNaN(Number(newVal))){
+      order.price = Number(newVal);
+      await updateOrderInStorage(order.orderId, order);
+      document.getElementById('detailPrice').textContent = Number(newVal).toFixed(2) + ' zł';
+    }
+  }
+  
+  refreshUI();
+}
+
+async function updateStatus(orderIndex){
+  const orders = await getOrders();
+  const order = orders[orderIndex];
+  if(!order) return;
+  
+  const newStatus = document.getElementById('statusSelect').value;
+  order.status = newStatus;
+  
+  await updateOrderInStorage(order.orderId, order);
+  refreshUI();
+}
+
+async function removeOrder(orderIndex){
+  if(!confirm('Czy na pewno usunąć to zamówienie?')) return;
+  
+  const orders = await getOrders();
+  const order = orders[orderIndex];
+  if(!order) return;
+  
+  await deleteOrderFromStorage(order.orderId);
+  
+  closeDetails();
+  refreshUI();
+  alert('Zamówienie usunięte.');
+}
+
+async function removeItemFromOrder(itemIndex){
+  if(!confirm('Usunąć tę pozycję?')) return;
+  
+  const orders = await getOrders();
+  const order = orders[currentlyViewedOrderIndex];
+  if(!order) return;
+  
+  order.items.splice(itemIndex, 1);
+  
+  if(order.items.length === 0){
+    alert('Zamówienie musi mieć przynajmniej jedną pozycję.');
+    return;
+  }
+  
+  await updateOrderInStorage(order.orderId, order);
+  
+  renderOrderItems(order.items);
+  refreshUI();
+}
+
+function openAddItemModal(orderIndex){
+  currentOrderIndexForAdding = orderIndex;
+  selectedItemForAdding = null;
+  
+  const modal = document.getElementById('addItemModal');
+  modal.classList.add('active');
+  
+  const container = document.getElementById('modalAvailableBlocks');
+  container.innerHTML = '';
+  
+  offerBlocks.forEach(b => {
+    const el = document.createElement('div');
+    el.className = 'offer-item';
+    el.textContent = `${b.name} — ${b.price.toFixed(2)} zł`;
+    el.onclick = () => {
+      selectedItemForAdding = { name: b.name, price: b.price };
+      document.querySelectorAll('#modalAvailableBlocks .offer-item').forEach(x => x.style.background = '#fbfdff');
+      el.style.background = '#e0f2fe';
+    };
+    container.appendChild(el);
+  });
+  
+  document.getElementById('modalCustomName').value = '';
+  document.getElementById('modalCustomPrice').value = '';
+}
+
+function closeAddItemModal(){
+  document.getElementById('addItemModal').classList.remove('active');
+  currentOrderIndexForAdding = null;
+  selectedItemForAdding = null;
+}
+
+async function confirmAddItemToOrder(){
+  const orders = await getOrders();
+  const order = orders[currentOrderIndexForAdding];
+  if(!order) return;
+  
+  let newItem = selectedItemForAdding;
+  
+  if(!newItem){
+    const customName = document.getElementById('modalCustomName').value.trim();
+    const customPrice = Number(document.getElementById('modalCustomPrice').value);
+    
+    if(!customName || isNaN(customPrice)){
+      alert('Wybierz pozycję z oferty lub podaj nazwę i cenę własnej.');
+      return;
+    }
+    
+    newItem = { name: customName, price: customPrice };
+  }
+  
+  order.items.push(newItem);
+  
+  await updateOrderInStorage(order.orderId, order);
+  
+  closeAddItemModal();
+  showDetails(currentOrderIndexForAdding);
+  refreshUI();
+}
+
+// ==================== UTILITY ====================
+async function refreshUI(){
+  if(currentTab === 'dashboard'){
+    loadDashboard();
+  } else if(currentTab === 'orders'){
+    loadOrders();
+  } else if(currentTab === 'stats'){
+    loadStatistics();
+  } else if(currentTab === 'reports'){
+    loadReports();
+  } else if(currentTab === 'settings'){
+    updateDataStats();
+  }
+}
+
+// Initialize on load
+window.addEventListener('DOMContentLoaded', function(){
+  renderBlocks();
+  loadDashboard();
+  updateDataStats();
+});
+</script>
+
+</body>
+</html>
+
